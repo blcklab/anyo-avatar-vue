@@ -1,0 +1,68 @@
+.anyo-avatar-viewer {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #0a0c10;
+  color: #f7f8fb;
+  outline: none;
+}
+.anyo-avatar-viewer--portfolio, .anyo-avatar-viewer.is-transparent { background: transparent; }
+.anyo-avatar-viewer:focus-visible { box-shadow: 0 0 0 2px rgba(255,255,255,.22); }
+.anyo-avatar-viewer__canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
+.anyo-avatar-viewer__status {
+  position: absolute; z-index: 8; left: 12px; bottom: 12px; display: flex; align-items: center; gap: 7px;
+  max-width: calc(100% - 24px); padding: 6px 9px; overflow: hidden; border: 1px solid rgba(255,255,255,.08);
+  border-radius: 999px; background: rgba(8,10,14,.58); color: rgba(255,255,255,.56); font: 600 10px/1.1 ui-sans-serif, system-ui, sans-serif;
+  white-space: nowrap; text-overflow: ellipsis; backdrop-filter: blur(14px);
+}
+.anyo-avatar-viewer__status.is-error { color: #ffd1d1; border-color: rgba(255,110,110,.18); }
+.anyo-avatar-viewer__dot { width: 6px; height: 6px; flex: none; border-radius: 50%; background: currentColor; opacity: .75; }
+.anyo-avatar-controls { position: absolute; z-index: 12; left: 50%; bottom: 14px; transform: translateX(-50%); font-family: ui-sans-serif, system-ui, sans-serif; }
+.anyo-avatar-control-bar {
+  display: flex; align-items: center; gap: 4px; padding: 6px; border: 1px solid rgba(255,255,255,.11); border-radius: 14px;
+  background: rgba(8,10,14,.74); box-shadow: 0 18px 48px rgba(0,0,0,.34), inset 0 1px rgba(255,255,255,.04);
+  backdrop-filter: blur(20px) saturate(150%);
+}
+.anyo-avatar-control-button {
+  min-width: 34px; height: 34px; padding: 0 10px; border: 0; border-radius: 9px; background: transparent; color: rgba(255,255,255,.76);
+  font: 750 10px/1 ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: background .14s ease, color .14s ease, transform .14s ease;
+}
+.anyo-avatar-control-button:hover:not(:disabled), .anyo-avatar-control-button:focus-visible { background: rgba(255,255,255,.09); color: #fff; outline: none; }
+.anyo-avatar-control-button:active:not(:disabled) { transform: translateY(1px); }
+.anyo-avatar-control-button:disabled { opacity: .34; cursor: default; }
+.anyo-avatar-more-panel {
+  position: absolute; left: 50%; bottom: 50px; width: min(390px, calc(100vw - 24px)); max-height: min(640px, calc(100vh - 120px));
+  padding: 12px; overflow: auto; transform: translateX(-50%); border: 1px solid rgba(255,255,255,.11); border-radius: 17px;
+  background: rgba(8,10,14,.92); box-shadow: 0 30px 80px rgba(0,0,0,.52), inset 0 1px rgba(255,255,255,.05); backdrop-filter: blur(26px) saturate(150%);
+  scrollbar-width: thin;
+}
+.anyo-avatar-control-section { display: grid; gap: 8px; padding: 10px 2px; border-top: 1px solid rgba(255,255,255,.07); }
+.anyo-avatar-control-section:first-child { border-top: 0; padding-top: 2px; }
+.anyo-avatar-control-label { color: rgba(255,255,255,.38); font: 800 8px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+.anyo-avatar-grid { display: grid; gap: 6px; }
+.anyo-avatar-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.anyo-avatar-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.anyo-avatar-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.anyo-avatar-grid .anyo-avatar-control-button { width: 100%; background: rgba(255,255,255,.035); }
+.anyo-avatar-field { display: grid; gap: 5px; min-width: 0; color: rgba(255,255,255,.54); font: 650 9px/1.25 ui-sans-serif, system-ui, sans-serif; }
+.anyo-avatar-field input[type='range'] { width: 100%; accent-color: #fff; }
+.anyo-avatar-field input[type='number'], .anyo-avatar-select {
+  width: 100%; min-width: 0; height: 34px; padding: 0 8px; border: 1px solid rgba(255,255,255,.09); border-radius: 9px;
+  outline: none; background: rgba(255,255,255,.05); color: #fff; font: 600 10px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.anyo-avatar-select option { color: #111; }
+.anyo-avatar-field input[type='color'] { width: 100%; height: 34px; padding: 3px; border: 1px solid rgba(255,255,255,.09); border-radius: 9px; background: rgba(255,255,255,.05); }
+.anyo-avatar-check { display: flex; align-items: center; gap: 7px; min-height: 34px; color: rgba(255,255,255,.58); font: 650 9px/1 ui-sans-serif, system-ui, sans-serif; }
+.anyo-avatar-check input { accent-color: #fff; }
+.anyo-avatar-runtime-line { display: flex; justify-content: space-between; gap: 12px; color: rgba(255,255,255,.46); font: 600 9px/1.2 ui-sans-serif, system-ui, sans-serif; }
+.anyo-avatar-runtime-line strong { color: rgba(255,255,255,.82); }
+.anyo-avatar-muted { margin: 0; color: rgba(255,255,255,.4); font: 500 9px/1.5 ui-sans-serif, system-ui, sans-serif; }
+@media (max-width: 620px) {
+  .anyo-avatar-controls { left: 8px; right: 8px; transform: none; }
+  .anyo-avatar-control-bar { justify-content: center; width: 100%; overflow-x: auto; }
+  .anyo-avatar-more-panel { left: auto; right: 0; width: min(390px, calc(100vw - 16px)); transform: none; }
+  .anyo-avatar-control-button { padding-inline: 8px; }
+  .anyo-avatar-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

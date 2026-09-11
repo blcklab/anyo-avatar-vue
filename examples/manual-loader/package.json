@@ -1,0 +1,23 @@
+{
+  "name": "anyo-avatar-vue-manual-loader-example",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vue-tsc -b && vite build"
+  },
+  "dependencies": {
+    "vue": "^3.5.0",
+    "@blcklab/anyo-avatar-vue": "file:../..",
+    "@blcklab/anyo-avatar-viewer": "file:./vendor/blcklab-anyo-avatar-viewer-0.2.0-alpha.8.tgz",
+    "@blcklab/anyo-avatar": "file:./vendor/blcklab-anyo-avatar-0.2.0.tgz",
+    "@blcklab/sekai64": "file:./vendor/blcklab-sekai64-0.8.0-rc.33.tgz"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0",
+    "vue-tsc": "^3.0.0"
+  }
+}
