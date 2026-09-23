@@ -3,10 +3,10 @@ import assert from 'node:assert/strict'
 
 const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
 assert.equal(pkg.name, '@blcklab/anyo-avatar-vue')
-assert.equal(pkg.version, '0.2.0-alpha.2')
-assert.equal(pkg.peerDependencies['@blcklab/anyo-avatar-viewer'], '0.2.0-alpha.8')
-assert.equal(pkg.peerDependencies['@blcklab/anyo-avatar'], '0.2.0')
-assert.equal(pkg.peerDependencies['@blcklab/sekai64'], '0.8.0-rc.33')
+assert.equal(pkg.version, '0.2.0-alpha.3')
+assert.equal(pkg.peerDependencies['@blcklab/anyo-avatar-viewer'], '0.2.0-alpha.9')
+assert.equal(pkg.peerDependencies['@blcklab/anyo-avatar'], '^0.2.0')
+assert.equal(pkg.peerDependencies['@blcklab/sekai64'], '>=0.8.0-0 <0.9.0')
 assert.ok(pkg.exports['./style.css'])
 
 const source = await readFile(new URL('../src/useAnyoAvatarViewer.ts', import.meta.url), 'utf8')
@@ -52,4 +52,4 @@ assert.equal(sourceUtil.inferModelFormat('hero.vrm'), 'vrm')
 assert.equal(sourceUtil.inferModelFormat('scene.glb?x=1'), 'glb')
 assert.equal(sourceUtil.inferAnimationFormat('idle.vrma'), 'vrma')
 
-console.log('Vue adapter package contract verified: core alpha.8, high-end scene props, static/animated modes, progress/diagnostics, transparent portfolio mode.')
+console.log('Vue adapter package contract verified: core alpha.9, high-end scene props, static/animated modes, progress/diagnostics, transparent portfolio mode.')

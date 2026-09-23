@@ -1,6 +1,6 @@
 {
   "name": "@blcklab/anyo-avatar-vue",
-  "version": "0.2.0-alpha.2",
+  "version": "0.2.0-alpha.3",
   "description": "Vue 3 adapter, dynamic avatar component, and high-end host scene layer for @blcklab/anyo-avatar-viewer.",
   "type": "module",
   "sideEffects": [
@@ -28,16 +28,16 @@
   },
   "peerDependencies": {
     "vue": "^3.5.0",
-    "@blcklab/anyo-avatar-viewer": "0.2.0-alpha.8",
-    "@blcklab/anyo-avatar": "0.2.0",
-    "@blcklab/sekai64": "0.8.0-rc.33"
+    "@blcklab/anyo-avatar-viewer": "0.2.0-alpha.9",
+    "@blcklab/anyo-avatar": "^0.2.0",
+    "@blcklab/sekai64": ">=0.8.0-0 <0.9.0"
   },
   "devDependencies": {
     "typescript": "5.8.3",
     "vue": "^3.5.0",
-    "@blcklab/anyo-avatar-viewer": "0.2.0-alpha.8",
-    "@blcklab/anyo-avatar": "0.2.0",
-    "@blcklab/sekai64": "0.8.0-rc.33"
+    "@blcklab/anyo-avatar-viewer": "0.2.0-alpha.9",
+    "@blcklab/anyo-avatar": "0.2.1",
+    "@blcklab/sekai64": "0.8.0-rc.34"
   },
   "engines": {
     "node": ">=22.12.0"

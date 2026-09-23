@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0-alpha.3
+
+- Refresh ecosystem peer metadata for the frozen S24 renderer line.
+- Consume `@blcklab/anyo-avatar-viewer@0.2.0-alpha.9` and compatible `@blcklab/anyo-avatar` `0.2.x` releases.
+- Accept `@blcklab/sekai64 >=0.8.0-0 <0.9.0` instead of pinning only `0.8.0-rc.33`.
+- No Vue component, scene-config, or runtime behavior changes are introduced by this compatibility patch.
+
 ## 0.2.0-alpha.2
 
 - Added npm package metadata and explicit development peers.
