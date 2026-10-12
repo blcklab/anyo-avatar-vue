@@ -77,6 +77,8 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
   const sceneModels = shallowRef<readonly AnyoSceneModelInfo[]>(Object.freeze([]))
 
   let runtime: AnyoAvatarRuntime | undefined
+  let initializing: Promise<void> | undefined
+  let lifecycle = 0
   let sceneManager: AnyoSceneModelManager | undefined
   let unsubscribeViewer: (() => void) | undefined
   let unsubscribeCamera: (() => void) | undefined
@@ -97,73 +99,92 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
   const isPlaying = computed(() => viewerState.value.status === 'playing')
 
   async function initialize() {
-    if (runtime || disposed) return
+    if (disposed || runtime) return
+    if (initializing) return initializing
     const canvas = options.canvas.value
     if (!canvas) return
-    try {
-      const value = options.options.value
-      runtime = await createSekai64AvatarViewer({
-        canvas,
-        backend: value.backend,
-        pixelRatio: value.pixelRatio,
-        maxPixelRatio: value.maxPixelRatio,
-        quality: value.quality,
-        environment: value.environment,
-        background: value.transparent ? [0, 0, 0, 0] as const : value.background,
-        transparent: value.transparent,
-        exposure: value.exposure,
-        shadows: value.shadows,
-        navigation: value.navigation,
-        pointerPan: value.pointerPan,
-        autoFit: value.autoFit,
-        autoRotate: value.autoRotate,
-        autoRotateSpeed: value.autoRotateSpeed,
-        recovery: value.recovery,
-        normalization: value.normalization,
-        targetHeight: value.targetHeight,
-        vrma: value.vrma,
-        importers: value.importers,
-        onDiagnostic(message) {
-          diagnostic.value = message
-          options.onDiagnostic?.(message)
-        },
-      })
-      sceneManager = new AnyoSceneModelManager(runtime, {
-        onProgress: progress => options.onPropProgress?.(progress),
-        onDiagnostic: value => {
-          diagnostic.value = `[${value.id}] ${value.message}`
-          options.onPropDiagnostic?.(value)
-        },
-      })
-      backend.value = String(runtime.engine.capabilities.backend ?? '').toUpperCase()
-      viewerState.value = runtime.viewer.getSnapshot()
-      cameraState.value = runtime.navigation.getSnapshot()
-      recoveryState.value = runtime.recovery.getSnapshot()
-      unsubscribeViewer = runtime.viewer.subscribe(() => {
-        if (!runtime) return
-        viewerState.value = runtime.viewer.getSnapshot()
-        options.onStateChange?.(viewerState.value)
-      })
-      unsubscribeCamera = runtime.navigation.subscribe(() => {
-        if (!runtime) return
-        cameraState.value = runtime.navigation.getSnapshot()
-        options.onCameraChange?.(cameraState.value)
-      })
-      unsubscribeRecovery = runtime.recovery.subscribe(() => {
-        if (!runtime) return
-        recoveryState.value = runtime.recovery.getSnapshot()
-        options.onRecoveryChange?.(recoveryState.value)
-      })
-      ready.value = true
-      fatalError.value = ''
-      options.onReady?.(runtime)
-    } catch (error) {
-      fatalError.value = error instanceof Error ? error.message : String(error)
-      options.onError?.(error)
-    }
+    const epoch = lifecycle
+    const task = (async () => {
+      let created: AnyoAvatarRuntime | undefined
+      try {
+        const value = options.options.value
+        created = await createSekai64AvatarViewer({
+          canvas,
+          backend: value.backend,
+          pixelRatio: value.pixelRatio,
+          maxPixelRatio: value.maxPixelRatio,
+          quality: value.quality,
+          environment: value.environment,
+          background: value.transparent ? [0, 0, 0, 0] as const : value.background,
+          transparent: value.transparent,
+          exposure: value.exposure,
+          shadows: value.shadows,
+          navigation: value.navigation,
+          pointerPan: value.pointerPan,
+          autoFit: value.autoFit,
+          autoRotate: value.autoRotate,
+          autoRotateSpeed: value.autoRotateSpeed,
+          recovery: value.recovery,
+          normalization: value.normalization,
+          targetHeight: value.targetHeight,
+          vrma: value.vrma,
+          importers: value.importers,
+          onDiagnostic(message) {
+            if (disposed || epoch !== lifecycle) return
+            diagnostic.value = message
+            options.onDiagnostic?.(message)
+          },
+        })
+        if (disposed || epoch !== lifecycle) {
+          await created.dispose()
+          return
+        }
+        const active = created
+        runtime = active
+        sceneManager = new AnyoSceneModelManager(active, {
+          onProgress: progress => { if (!disposed) options.onPropProgress?.(progress) },
+          onDiagnostic: value => {
+            if (disposed) return
+            diagnostic.value = `[${value.id}] ${value.message}`
+            options.onPropDiagnostic?.(value)
+          },
+        })
+        backend.value = String(active.engine.capabilities.backend ?? '').toUpperCase()
+        viewerState.value = active.viewer.getSnapshot()
+        cameraState.value = active.navigation.getSnapshot()
+        recoveryState.value = active.recovery.getSnapshot()
+        unsubscribeViewer = active.viewer.subscribe(() => {
+          if (runtime !== active || disposed) return
+          viewerState.value = active.viewer.getSnapshot()
+          options.onStateChange?.(viewerState.value)
+        })
+        unsubscribeCamera = active.navigation.subscribe(() => {
+          if (runtime !== active || disposed) return
+          cameraState.value = active.navigation.getSnapshot()
+          options.onCameraChange?.(cameraState.value)
+        })
+        unsubscribeRecovery = active.recovery.subscribe(() => {
+          if (runtime !== active || disposed) return
+          recoveryState.value = active.recovery.getSnapshot()
+          options.onRecoveryChange?.(recoveryState.value)
+        })
+        ready.value = true
+        fatalError.value = ''
+        options.onReady?.(active)
+      } catch (error) {
+        if (disposed || epoch !== lifecycle) return
+        fatalError.value = error instanceof Error ? error.message : String(error)
+        options.onError?.(error)
+      }
+    })()
+    initializing = task
+    try { await task }
+    finally { if (initializing === task) initializing = undefined }
   }
 
   async function destroyRuntime() {
+    lifecycle++
+    const pendingInitialization = initializing
     unsubscribeViewer?.(); unsubscribeViewer = undefined
     unsubscribeCamera?.(); unsubscribeCamera = undefined
     unsubscribeRecovery?.(); unsubscribeRecovery = undefined
@@ -177,6 +198,8 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
     recoveryState.value = null
     sceneModels.value = Object.freeze([])
     if (previous) await previous.dispose()
+    // A queued recreate must not accidentally reuse a canceled initialization.
+    if (pendingInitialization) await pendingInitialization
   }
 
   async function recreate() {
@@ -185,7 +208,9 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
       const model = currentModel
       const animations = [...currentAnimations]
       await destroyRuntime()
+      if (disposed) return
       await initialize()
+      if (disposed || !runtime) return
       if (model) {
         await loadModel(model, false)
         for (const animation of animations) await loadAnimation(animation, false)
@@ -194,13 +219,14 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
         for (const { input, config } of sceneMemory.values()) await sceneManager.load(input, config)
         refreshSceneModels()
       }
-    }).catch(error => { options.onError?.(error) })
+    }).catch(error => { if (!disposed) options.onError?.(error) })
     return recreateQueue
   }
 
   async function loadModel(input: AnyoAvatarModelInput, remember = true) {
-    await requireRuntime()
-    await withModelSource(input, source => runtime!.viewer.loadModel(source))
+    const active = await requireRuntime()
+    await withModelSource(input, source => active.viewer.loadModel(source))
+    if (disposed || runtime !== active) return
     if (remember) {
       currentModel = input
       currentAnimations = []
@@ -209,9 +235,10 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
   }
 
   async function loadAnimation(input: AnyoAvatarAnimationInput, remember = true) {
-    await requireRuntime()
+    const active = await requireRuntime()
     if (!hasModel.value) throw new Error('Load an avatar model before loading an animation.')
-    await withAnimationSource(input, source => runtime!.viewer.loadAnimation(source))
+    await withAnimationSource(input, source => active.viewer.loadAnimation(source))
+    if (disposed || runtime !== active) return
     if (remember) currentAnimations.push(input)
     options.onAnimationLoaded?.()
   }
@@ -378,6 +405,9 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
     modelPicker?.remove(); animationPicker?.remove(); propPicker?.remove(); propAnimationPicker?.remove()
     modelPicker = undefined; animationPicker = undefined; propPicker = undefined; propAnimationPicker = undefined
     await destroyRuntime()
+    sceneMemory.clear()
+    currentModel = undefined
+    currentAnimations = []
   }
 
   const publicState = computed(() => Object.freeze({
@@ -448,7 +478,7 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
 
   function requireSceneManager() { if (!sceneManager) throw new Error(fatalError.value || 'Scene manager is not ready.'); return sceneManager }
 
-  async function requireRuntime() { if (!runtime) await initialize(); if (!runtime) throw new Error(fatalError.value || 'Avatar viewer is not ready.'); return runtime }
+  async function requireRuntime() { if (!runtime) await initialize(); if (disposed || !runtime) throw new Error(fatalError.value || 'Avatar viewer is not ready.'); return runtime }
   function requireRuntimeSync() { if (!runtime) throw new Error(fatalError.value || 'Avatar viewer is not ready.'); return runtime }
 
   return {

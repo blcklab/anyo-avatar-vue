@@ -3,11 +3,12 @@ import assert from 'node:assert/strict'
 
 const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
 assert.equal(pkg.name, '@blcklab/anyo-avatar-vue')
-assert.equal(pkg.version, '0.2.0-alpha.3')
-assert.equal(pkg.peerDependencies['@blcklab/anyo-avatar-viewer'], '0.2.0-alpha.9')
+assert.equal(pkg.version, '0.2.0-alpha.4')
+assert.equal(pkg.peerDependencies['@blcklab/anyo-avatar-viewer'], '^0.2.0-alpha.9')
 assert.equal(pkg.peerDependencies['@blcklab/anyo-avatar'], '^0.2.0')
 assert.equal(pkg.peerDependencies['@blcklab/sekai64'], '>=0.8.0-0 <0.9.0')
-assert.ok(pkg.exports['./style.css'])
+assert.equal(pkg.exports['./style.css'], './dist/style.css')
+assert.ok(pkg.scripts.check.includes('verify-package.mjs'))
 
 const source = await readFile(new URL('../src/useAnyoAvatarViewer.ts', import.meta.url), 'utf8')
 assert.match(source, /createSekai64AvatarViewer/)
@@ -52,4 +53,10 @@ assert.equal(sourceUtil.inferModelFormat('hero.vrm'), 'vrm')
 assert.equal(sourceUtil.inferModelFormat('scene.glb?x=1'), 'glb')
 assert.equal(sourceUtil.inferAnimationFormat('idle.vrma'), 'vrma')
 
-console.log('Vue adapter package contract verified: core alpha.9, high-end scene props, static/animated modes, progress/diagnostics, transparent portfolio mode.')
+console.log('Vue adapter package contract verified: core alpha.9+, high-end scene props, static/animated modes, progress/diagnostics, transparent portfolio mode.')
+
+// Renderer creation and scene imports must remain scoped to their owning Vue component.
+assert.match(source, /let initializing: Promise<void>/)
+assert.match(source, /epoch !== lifecycle/)
+assert.match(scene, /this\.pendingIds\.has\(id\)/)
+assert.match(scene, /this\.alive\(\)/)

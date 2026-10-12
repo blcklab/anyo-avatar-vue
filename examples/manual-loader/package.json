@@ -10,9 +10,9 @@
   "dependencies": {
     "vue": "^3.5.0",
     "@blcklab/anyo-avatar-vue": "file:../..",
-    "@blcklab/anyo-avatar-viewer": "file:./vendor/blcklab-anyo-avatar-viewer-0.2.0-alpha.8.tgz",
-    "@blcklab/anyo-avatar": "file:./vendor/blcklab-anyo-avatar-0.2.0.tgz",
-    "@blcklab/sekai64": "file:./vendor/blcklab-sekai64-0.8.0-rc.33.tgz"
+    "@blcklab/anyo-avatar-viewer": "0.2.0-alpha.10",
+    "@blcklab/anyo-avatar": "0.2.2",
+    "@blcklab/sekai64": "0.8.0-rc.56"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.0",

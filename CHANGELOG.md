@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0-alpha.4
+
+- Add a release-package integrity check: verify that `@blcklab/anyo-avatar-vue/style.css` exists in the actual npm pack manifest, is identical to the source stylesheet, and remains marked as a bundler side effect.
+- Prevent missing CSS/JS/declaration artifacts from passing `npm run check` or the publish workflow.
+- Update the manual-loader example's stale local vendor dependencies to the tested Avatar 0.2.2, Viewer alpha.10, and Sekai64 rc.56 versions.
+
+- Accept Avatar Viewer alpha.9 and later compatible 0.2 prereleases, including alpha.10.
+- Align development dependency baselines to Avatar 0.2.2 and Sekai64 0.8.0-rc.56.
+- Ignore and release late renderer initialization after Vue component unmount or runtime replacement.
+- Reject late scene-prop loads after scene-manager disposal, and reserve model IDs during parallel loads.
+- Preserve current public API, presets, rendering settings, and scene authoring formats.
+
 ## 0.2.0-alpha.3
 
 - Refresh ecosystem peer metadata for the frozen S24 renderer line.

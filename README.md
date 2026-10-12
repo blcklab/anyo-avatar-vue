@@ -2,7 +2,7 @@
 
 Vue 3 plugin and dynamic avatar component for `@blcklab/anyo-avatar-viewer`, including portfolio/viewer/studio presets, full viewer controls, manual file loading, JSON scene props, per-prop animation, and high-end glTF loading options.
 
-> `0.2.0-alpha.2` is a prerelease and is published under the `next` npm dist-tag.
+> `0.2.0-alpha.4` is a proposed prerelease. Published prereleases use the `next` npm dist-tag.
 
 ## Installation
 
@@ -23,6 +23,18 @@ createApp(App)
   .use(AnyoAvatarVue)
   .mount('#app')
 ```
+
+## Stylesheet and package integrity
+
+Import the bundled stylesheet once at the application entry point:
+
+```ts
+import '@blcklab/anyo-avatar-vue/style.css'
+```
+
+The package build copies `src/style.css` to `dist/style.css`; the CSS is preserved by the package `sideEffects` contract. Run `npm run check` before publishing: it verifies that the CSS, JavaScript entry point, and declarations are **actually included** in the npm pack manifest. The check deliberately uses `npm pack --ignore-scripts --dry-run`, so an omitted build artifact cannot be silently restored by `prepack`.
+
+`0.2.0-alpha.4` is a candidate until validated with genuine Vue and published after its Avatar 0.2.2 and Avatar Viewer alpha.10 prerequisites. Do not use the `next` dist-tag as evidence that these candidate versions are already available.
 
 ## Portfolio
 

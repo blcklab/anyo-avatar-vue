@@ -52,6 +52,8 @@ export interface AnyoSceneModelManagerOptions {
  */
 export class AnyoSceneModelManager {
   private readonly records = new Map<string, SceneRecord>()
+  private readonly pendingIds = new Set<string>()
+  private generation = 0
   private readonly assets = new AssetManager()
   private sequence = 0
   private externalSequence = 0
@@ -80,7 +82,7 @@ export class AnyoSceneModelManager {
   async load(input: AnyoSceneModelInput, config: Omit<AnyoSceneModelConfig, 'src'> = {}): Promise<AnyoSceneModelInfo> {
     this.alive()
     const id = config.id?.trim() || `anyo-scene-model-${++this.sequence}`
-    if (this.records.has(id)) throw new Error(`Scene model id is already in use: ${id}`)
+    if (this.records.has(id) || this.pendingIds.has(id)) throw new Error(`Scene model id is already in use: ${id}`)
     const name = config.name?.trim() || (typeof input === 'string' ? nameFromUrl(input) : isFile(input) ? input.name.replace(/\.glb$/i, '') : nameFromUrl(input.url)) || id
     const load = normalizeLoadConfig(config.load)
     const loadMode = load.mode ?? 'animated'
@@ -88,10 +90,14 @@ export class AnyoSceneModelManager {
       throw new Error(`Scene model "${id}" is configured as static but also declares animations. Use load.mode: "animated".`)
     }
 
+    this.pendingIds.add(id)
+    const generation = this.generation
     const loader = new GltfLoader(this.assets)
-    const prepared = await prepareModelInput(loader, input)
+    let prepared: Awaited<ReturnType<typeof prepareModelInput>> | undefined
     let node: GltfModelNode | undefined
     try {
+      prepared = await prepareModelInput(loader, input)
+      this.checkGeneration(generation)
       const animationAdapter = loadMode === 'animated'
         ? createGltfAnimationAdapter(this.runtime.animation, { createMixer: true })
         : undefined
@@ -126,6 +132,7 @@ export class AnyoSceneModelManager {
           message: diagnostic.message,
         })),
       })
+      this.checkGeneration(generation)
       applyTransform(node, config)
       applyRenderConfig(node, config.render)
       this.runtime.scene.add(node)
@@ -147,12 +154,17 @@ export class AnyoSceneModelManager {
       for (const animation of config.animations ?? []) await this.loadAnimation(id, animation)
       return snapshot(record)
     } catch (error) {
-      node?.removeFromParent()
-      node?.dispose()
-      loader.dispose()
+      // A failed attached animation must not leave a live scene record behind.
+      if (this.records.has(id)) this.remove(id)
+      else {
+        node?.removeFromParent()
+        node?.dispose()
+        loader.dispose()
+      }
       throw error
     } finally {
-      prepared.dispose()
+      prepared?.dispose()
+      this.pendingIds.delete(id)
     }
   }
 
@@ -172,6 +184,10 @@ export class AnyoSceneModelManager {
           signal: new AbortController().signal,
           targets: captureTargets(record.node),
         })
+        if (this.disposed || this.records.get(id) !== record) {
+          for (const clip of imported) clip.dispose()
+          throw new Error(`Scene model "${id}" was removed while its animation was loading.`)
+        }
         for (const [index, clip] of imported.entries()) {
           const owned = cloneClip(clip, `scene:${id}:external:${++this.externalSequence}:${index}`)
           record.mixer.addClip(owned)
@@ -229,7 +245,10 @@ export class AnyoSceneModelManager {
     record.loader.dispose()
   }
 
-  clear(): void { for (const id of [...this.records.keys()]) this.remove(id) }
+  clear(): void {
+    this.generation++
+    for (const id of [...this.records.keys()]) this.remove(id)
+  }
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
@@ -244,6 +263,10 @@ export class AnyoSceneModelManager {
     return record
   }
   private alive(): void { if (this.disposed) throw new Error('Scene model manager is disposed.') }
+  private checkGeneration(generation: number): void {
+    this.alive()
+    if (generation !== this.generation) throw new Error('Scene load was canceled because the scene was cleared or replaced.')
+  }
 }
 
 export function mergeSceneModelConfig(
