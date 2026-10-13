@@ -20,6 +20,8 @@ import {
   type Sekai64AvatarEnvironment,
   type Sekai64AvatarQuality,
   type Sekai64FocusPreset,
+  type Sekai64FrameOptions,
+  type Sekai64FramePreset,
   type Sekai64RecoverySnapshot,
 } from '@blcklab/anyo-avatar-viewer/browser'
 import type {
@@ -237,10 +239,11 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
   async function loadAnimation(input: AnyoAvatarAnimationInput, remember = true) {
     const active = await requireRuntime()
     if (!hasModel.value) throw new Error('Load an avatar model before loading an animation.')
-    await withAnimationSource(input, source => active.viewer.loadAnimation(source))
-    if (disposed || runtime !== active) return
+    const clips = await withAnimationSource(input, source => active.viewer.loadAnimation(source))
+    if (disposed || runtime !== active) return Object.freeze([])
     if (remember) currentAnimations.push(input)
     options.onAnimationLoaded?.()
+    return clips
   }
 
   async function loadScene(config: AnyoSceneConfig, loadOptions: { readonly replace?: boolean } = {}) {
@@ -331,6 +334,8 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
   function fit() { requireRuntimeSync().navigation.fit() }
   function resetView() { requireRuntimeSync().navigation.resetView() }
   function focus(preset: Sekai64FocusPreset) { requireRuntimeSync().navigation.focus(preset) }
+  function frame(preset: Sekai64FramePreset, frameOptions: Sekai64FrameOptions = {}) { requireRuntimeSync().navigation.frame(preset, frameOptions) }
+  function clearFrame() { requireRuntimeSync().navigation.clearFrame() }
   function focusAt(target: ViewerVec3, distance?: number) { requireRuntimeSync().navigation.focusAt(target, distance) }
   function focusHeight(ratio: number, distance?: number) { requireRuntimeSync().navigation.focusHeight(ratio, distance) }
   function focusUp(step?: number) { requireRuntimeSync().navigation.focusUp(step) }
@@ -339,6 +344,7 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
   function zoomOut() { requireRuntimeSync().navigation.zoomOut() }
   function rotateLeft() { requireRuntimeSync().navigation.rotateLeft() }
   function rotateRight() { requireRuntimeSync().navigation.rotateRight() }
+  function rotateBy(angleRadians: number) { requireRuntimeSync().navigation.rotateBy(angleRadians) }
   function panBy(x: number, y: number) { requireRuntimeSync().navigation.panBy(x, y) }
   function setAutoRotate(enabled: boolean) { requireRuntimeSync().navigation.setAutoRotate(enabled) }
   function setAutoRotateSpeed(speed: number) { requireRuntimeSync().navigation.setAutoRotateSpeed(speed) }
@@ -436,8 +442,8 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
     loadPropAnimationFile: (id, file, config = {}) => loadPropAnimation(id, { ...config, src: file }),
     playProp, pauseProp, resumeProp, stopProp, updateProp, setPropVisible, removeProp, clearProps,
     unload, play, pause, resume, togglePlayback, stop, seek, setSpeed,
-    fit, resetView, focus, focusAt, focusHeight, focusUp, focusDown,
-    zoomIn, zoomOut, rotateLeft, rotateRight, panBy,
+    fit, resetView, focus, frame, clearFrame, focusAt, focusHeight, focusUp, focusDown,
+    zoomIn, zoomOut, rotateLeft, rotateRight, rotateBy, panBy,
     setAutoRotate, setAutoRotateSpeed, setNavigationEnabled,
     setQuality, setEnvironment, setBackground, setExposure, setShadows,
     setExpression, clearExpression, resetExpressions, setLookAt, clearLookAt,

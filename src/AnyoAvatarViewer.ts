@@ -19,6 +19,8 @@ import type {
   Sekai64AvatarEnvironment,
   Sekai64AvatarNormalization,
   Sekai64AvatarQuality,
+  Sekai64FrameOptions,
+  Sekai64FramePreset,
   VrmAnimationImporterOptions,
 } from '@blcklab/anyo-avatar-viewer/browser'
 import { AnyoAvatarControls } from './AnyoAvatarControls.js'
@@ -27,6 +29,7 @@ import { resolveAnyoAvatarOptions } from './presets.js'
 import type {
   AnyoAvatarAnimationInput,
   AnyoAvatarControlsMode,
+  AnyoAvatarFraming,
   AnyoAvatarModelInput,
   AnyoAvatarPreset,
   AnyoAvatarVueDefaults,
@@ -47,6 +50,7 @@ export const AnyoAvatarViewer: DefineComponent<AnyoAvatarViewerProps> = defineCo
     loop: { type: String as PropType<'once' | 'repeat'>, default: 'repeat' },
     speed: { type: Number, default: 1 },
     fade: { type: Number, default: 0.2 },
+    framing: { type: [String, Object] as PropType<AnyoAvatarFraming | null>, default: null },
     preset: { type: String as PropType<AnyoAvatarPreset>, default: undefined },
     controls: { type: String as PropType<AnyoAvatarControlsMode>, default: undefined },
     quality: { type: String as PropType<Sekai64AvatarQuality>, default: undefined },
@@ -118,7 +122,7 @@ export const AnyoAvatarViewer: DefineComponent<AnyoAvatarViewerProps> = defineCo
       onRecoveryChange: state => emit('recovery-change', state),
       onDiagnostic: message => emit('diagnostic', message),
       onError: error => emit('error', error),
-      onModelLoaded: () => emit('model-loaded'),
+      onModelLoaded: () => { applyFramingProp(); emit('model-loaded') },
       onAnimationLoaded: () => emit('animation-loaded'),
       onSceneChange: models => emit('scene-change', models),
       onPropLoaded: model => emit('prop-loaded', model),
@@ -131,24 +135,28 @@ export const AnyoAvatarViewer: DefineComponent<AnyoAvatarViewerProps> = defineCo
 
     let modelToken = 0
     let animationToken = 0
+    const animationClipCache = new Map<string, readonly string[]>()
+
     watch(() => [controller.ready.value, props.model] as const, async ([ready, model]: readonly [boolean, AnyoAvatarModelInput | null | undefined]) => {
       if (!ready || !model) return
       const token = ++modelToken
       try {
         await controller.handle.loadModel(model)
         if (token !== modelToken) return
-        await loadAnimationProps()
+        animationClipCache.clear()
+        await refreshAnimationProps()
       } catch (error) { emit('error', error) }
     }, { immediate: true })
 
     watch(() => [props.animation, props.animations] as const, async () => {
       if (!controller.hasModel.value || (!props.animation && !props.animations)) return
-      const token = ++animationToken
-      try {
-        await loadAnimationProps()
-        if (token !== animationToken) return
-      } catch (error) { emit('error', error) }
+      try { await refreshAnimationProps() }
+      catch (error) { emit('error', error) }
     })
+
+    watch(() => props.framing, () => {
+      if (controller.hasModel.value) applyFramingProp()
+    }, { deep: true })
 
     watch(() => [controller.ready.value, props.scene] as const, async ([ready, scene]: readonly [boolean, AnyoSceneConfig | null | undefined]) => {
       if (!ready || !scene) return
@@ -159,17 +167,47 @@ export const AnyoAvatarViewer: DefineComponent<AnyoAvatarViewerProps> = defineCo
     watch(() => props.runtimeKey, () => { void controller.handle.recreate() })
     watch(() => props.speed, (value: number | undefined) => { if (controller.hasModel.value && value !== undefined && Number.isFinite(value) && value >= 0) controller.handle.setSpeed(value) })
 
-    async function loadAnimationProps() {
+    function applyFramingProp() {
+      const framing = props.framing
+      if (!framing || !controller.hasModel.value) return
+      if (typeof framing === 'string') {
+        controller.handle.frame(framing as Sekai64FramePreset, { responsive: true })
+        return
+      }
+      const { preset, ...frameOptions } = framing
+      controller.handle.frame(preset, { responsive: true, ...(frameOptions as Sekai64FrameOptions) })
+    }
+
+    async function refreshAnimationProps() {
+      const token = ++animationToken
       const inputs: AnyoAvatarAnimationInput[] = []
       if (props.animation) inputs.push(props.animation)
       if (props.animations) inputs.push(...(Array.isArray(props.animations) ? props.animations : [props.animations]))
-      for (const input of inputs) await controller.handle.loadAnimation(input)
-      if (props.autoplay && controller.viewerState.value.clips.length) {
-        const id = typeof props.autoplay === 'string'
-          ? controller.viewerState.value.clips.find(clip => clip.id === props.autoplay || clip.name === props.autoplay)?.id
-          : controller.viewerState.value.clips[0]?.id
-        if (id) controller.handle.play(id, { loop: props.loop ?? 'repeat', speed: props.speed ?? 1, fade: props.fade ?? 0.2 })
+      const loadedClipIds: string[] = []
+
+      for (const input of inputs) {
+        const key = animationInputKey(input)
+        const cached = key ? animationClipCache.get(key) : undefined
+        const available = controller.viewerState.value.clips
+        if (cached?.length && cached.every(id => available.some(clip => clip.id === id))) {
+          loadedClipIds.push(...cached)
+          continue
+        }
+        const clips = await controller.handle.loadAnimation(input)
+        if (token !== animationToken) return
+        const ids = clips.map(clip => clip.id)
+        loadedClipIds.push(...ids)
+        if (key && ids.length) animationClipCache.set(key, Object.freeze(ids.slice()))
       }
+
+      if (token !== animationToken || !props.autoplay) return
+      const available = controller.viewerState.value.clips
+      const preferred = loadedClipIds.map(id => available.find(clip => clip.id === id)).filter(Boolean)
+      const id = typeof props.autoplay === 'string'
+        ? preferred.find(clip => clip!.id === props.autoplay || clip!.name === props.autoplay)?.id
+          ?? available.find(clip => clip.id === props.autoplay || clip.name === props.autoplay)?.id
+        : preferred[0]?.id ?? available[0]?.id
+      if (id) controller.handle.play(id, { loop: props.loop ?? 'repeat', speed: props.speed ?? 1, fade: props.fade ?? 0.2 })
     }
 
     function onKeyDown(event: KeyboardEvent) {
@@ -190,6 +228,7 @@ export const AnyoAvatarViewer: DefineComponent<AnyoAvatarViewerProps> = defineCo
       else if (event.key === '1') controller.handle.focus('body')
       else if (event.key === '2') controller.handle.focus('face')
       else if (event.key === '3') controller.handle.focus('eyes')
+      else if (event.key === '4') controller.handle.frame('portrait', { responsive: true })
       else if (event.key.toLowerCase() === 'f') controller.handle.fit()
       else if (event.key.toLowerCase() === 'r') controller.handle.resetView()
       else if (event.code === 'Space') controller.handle.togglePlayback()
@@ -239,3 +278,11 @@ export const AnyoAvatarViewer: DefineComponent<AnyoAvatarViewerProps> = defineCo
     }
   },
 }) as unknown as DefineComponent<AnyoAvatarViewerProps>
+
+function animationInputKey(input: AnyoAvatarAnimationInput): string | undefined {
+  if (typeof input === 'string') return `url:${input}`
+  if ('url' in input) {
+    return `source:${input.url}|${input.format}|${JSON.stringify(input.nodeMap ?? {})}`
+  }
+  return undefined
+}

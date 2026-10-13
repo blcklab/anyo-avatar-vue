@@ -8,6 +8,7 @@
   model="/me.vrm"
   animation="/idle.vrma"
   autoplay
+  framing="portrait"
   transparent
 />
 ```
@@ -16,7 +17,33 @@ The exposed component handle mirrors the framework-neutral viewer plus Vue host-
 
 ## Primary avatar
 
-`loadModel`, `loadModelFile`, `loadAnimation`, `loadAnimationFile`, `play`, `pause`, `resume`, `stop`, `seek`, `setSpeed`, `setExpression`, `setLookAt`, camera/navigation methods, visual controls, recovery, screenshot and fullscreen are available through the template ref.
+`loadModel`, `loadModelFile`, `loadAnimation`, `loadAnimationFile`, `play`, `pause`, `resume`, `stop`, `seek`, `setSpeed`, `setExpression`, `setLookAt`, camera/navigation methods, visual controls, recovery, screenshot and fullscreen are available through the template ref. `loadAnimation` / `loadAnimationFile` return the newly installed clip records, which lets adapters autoplay the animation that was just selected instead of falling back to the first clip in the library.
+
+
+## Responsive framing
+
+Use semantic framing when a UI needs composition rather than point focus:
+
+```vue
+<AnyoAvatarViewer
+  preset="portfolio"
+  model="/me.vrm"
+  framing="portrait"
+  transparent
+/>
+```
+
+The string shorthand is responsive by default in Vue. For art direction:
+
+```vue
+<AnyoAvatarViewer
+  :framing="{ preset: 'portrait', coverage: 0.82, offsetY: 0.02, responsive: true }"
+/>
+```
+
+`portrait` derives a compact upper-body frame from VRM humanoid landmarks plus authored hair/model bounds, so it does not call full-body `fit()`. The exposed handle also provides `frame(preset, options)`, `clearFrame()`, and `rotateBy(angleRadians)`.
+
+Changing the declarative `animation` prop does not recreate the renderer or camera. Previously loaded URL animations are reused and the newly selected clip is the autoplay target.
 
 ## Scene props
 

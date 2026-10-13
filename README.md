@@ -2,7 +2,7 @@
 
 Vue 3 plugin and dynamic avatar component for `@blcklab/anyo-avatar-viewer`, including portfolio/viewer/studio presets, full viewer controls, manual file loading, JSON scene props, per-prop animation, and high-end glTF loading options.
 
-> `0.2.0-alpha.4` is a proposed prerelease. Published prereleases use the `next` npm dist-tag.
+> `0.2.0-alpha.5` is a proposed prerelease. Published prereleases use the `next` npm dist-tag.
 
 ## Installation
 
@@ -34,7 +34,7 @@ import '@blcklab/anyo-avatar-vue/style.css'
 
 The package build copies `src/style.css` to `dist/style.css`; the CSS is preserved by the package `sideEffects` contract. Run `npm run check` before publishing: it verifies that the CSS, JavaScript entry point, and declarations are **actually included** in the npm pack manifest. The check deliberately uses `npm pack --ignore-scripts --dry-run`, so an omitted build artifact cannot be silently restored by `prepack`.
 
-`0.2.0-alpha.4` is a candidate until validated with genuine Vue and published after its Avatar 0.2.2 and Avatar Viewer alpha.10 prerequisites. Do not use the `next` dist-tag as evidence that these candidate versions are already available.
+`0.2.0-alpha.5` is a candidate until validated with genuine Vue and published after its Avatar 0.2.2 and Avatar Viewer alpha.11 prerequisites. Do not use the `next` dist-tag as evidence that these candidate versions are already available.
 
 ## Portfolio
 
@@ -44,6 +44,7 @@ The package build copies `src/style.css` to `dist/style.css`; the CSS is preserv
   model="/models/me.vrm"
   animation="/animations/idle.vrma"
   autoplay
+  framing="portrait"
   transparent
 />
 ```
@@ -64,6 +65,7 @@ export const avatarConfig = {
   quality: 'sekai-viewer',
   environment: 'studio',
   controls: 'none',
+  framing: { preset: 'portrait', coverage: 0.84, responsive: true },
 } satisfies AnyoAvatarViewerProps
 ```
 
@@ -133,11 +135,11 @@ await handle?.loadPropFile(propFile, {
 
 ## Presets and controls
 
-Presets: `bare`, `portfolio`, `viewer`, `studio`. Controls: `none`, `minimal`, `full`. Every preset is overridable through component props.
+Presets: `bare`, `portfolio`, `viewer`, `studio`. Controls: `none`, `minimal`, `full`. Every preset is overridable through component props. Use `framing="portrait"` for responsive head-and-shoulders composition; an object form accepts `coverage`, `offsetX`, `offsetY`, and `responsive`.
 
 ## Custom UI
 
-Use `controls="none"`, scoped slots, or the component template ref when your application needs its own design system. The public handle exposes playback, camera navigation, visuals, expressions, look-at, recovery, fullscreen, screenshots, and scene-prop controls.
+Use `controls="none"`, scoped slots, or the component template ref when your application needs its own design system. The public handle exposes playback, camera navigation, semantic framing (`frame` / `clearFrame`), exact-radian `rotateBy`, visuals, expressions, look-at, recovery, fullscreen, screenshots, and scene-prop controls. Declarative `animation` changes load/cache the new source and autoplay the newly loaded clip without recreating the viewer or resetting the camera.
 
 ## Documentation
 

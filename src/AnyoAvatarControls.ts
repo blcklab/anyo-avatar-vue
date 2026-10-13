@@ -122,10 +122,13 @@ export const AnyoAvatarControls: DefineComponent<AnyoAvatarControlsProps> = defi
           ]),
         ]),
         section('Focus & camera', [
-          h('div', { class: 'anyo-avatar-grid anyo-avatar-grid--3' }, [
+          h('div', { class: 'anyo-avatar-grid anyo-avatar-grid--4' }, [
             button('Body', () => api.focus('body'), { disabled: !hasModel }),
+            button('Portrait', () => api.frame('portrait', { responsive: true }), { disabled: !hasModel }),
             button('Face', () => api.focus('face'), { disabled: !hasModel }),
             button('Eyes', () => api.focus('eyes'), { disabled: !hasModel }),
+          ]),
+          h('div', { class: 'anyo-avatar-grid anyo-avatar-grid--3' }, [
             button('Focus ↑', () => api.focusUp(), { disabled: !hasModel }),
             button('Focus ↓', () => api.focusDown(), { disabled: !hasModel }),
             button('Reset', api.resetView, { disabled: !hasModel }),

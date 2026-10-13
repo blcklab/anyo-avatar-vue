@@ -1,5 +1,6 @@
 import type {
   AnimationSource,
+  ClipInfo,
   ModelSource,
   PlayOptions,
   ViewerLookAtOptions,
@@ -13,6 +14,8 @@ import type {
   Sekai64AvatarNormalization,
   Sekai64AvatarQuality,
   Sekai64FocusPreset,
+  Sekai64FrameOptions,
+  Sekai64FramePreset,
   Sekai64RecoverySnapshot,
   VrmAnimationImporterOptions,
   Sekai64AnimationImporter,
@@ -22,6 +25,7 @@ export type AnyoAvatarPreset = 'bare' | 'portfolio' | 'viewer' | 'studio'
 export type AnyoAvatarControlsMode = 'none' | 'minimal' | 'full'
 export type AnyoAvatarModelInput = string | ModelSource | File
 export type AnyoAvatarAnimationInput = string | AnimationSource | File
+export type AnyoAvatarFraming = Sekai64FramePreset | ({ readonly preset: Sekai64FramePreset } & Sekai64FrameOptions)
 
 export type AnyoSceneModelInput = string | { readonly url: string; readonly format: 'glb' | 'gltf' } | File
 export type AnyoSceneLoadMode = 'animated' | 'static'
@@ -159,6 +163,8 @@ export interface AnyoAvatarViewerProps extends AnyoAvatarVueDefaults {
   readonly loop?: 'once' | 'repeat'
   readonly speed?: number
   readonly fade?: number
+  /** Responsive semantic camera framing. String shorthand defaults to responsive framing in Vue. */
+  readonly framing?: AnyoAvatarFraming | null
   /** Change this value to force a runtime rebuild when custom creation-time objects such as importers change. */
   readonly runtimeKey?: string | number
   readonly aspectRatio?: string | number
@@ -212,8 +218,8 @@ export interface AnyoAvatarViewerHandle {
   getRuntime(): AnyoAvatarRuntime | null
   loadModel(input: AnyoAvatarModelInput): Promise<void>
   loadModelFile(file: File): Promise<void>
-  loadAnimation(input: AnyoAvatarAnimationInput): Promise<void>
-  loadAnimationFile(file: File): Promise<void>
+  loadAnimation(input: AnyoAvatarAnimationInput): Promise<readonly ClipInfo[]>
+  loadAnimationFile(file: File): Promise<readonly ClipInfo[]>
   loadScene(config: AnyoSceneConfig, options?: { readonly replace?: boolean }): Promise<readonly AnyoSceneModelInfo[]>
   loadProp(input: AnyoSceneModelInput, config?: Omit<AnyoSceneModelConfig, 'src'>): Promise<AnyoSceneModelInfo>
   loadPropFile(file: File, config?: Omit<AnyoSceneModelConfig, 'src'>): Promise<AnyoSceneModelInfo>
@@ -238,6 +244,8 @@ export interface AnyoAvatarViewerHandle {
   fit(): void
   resetView(): void
   focus(preset: Sekai64FocusPreset): void
+  frame(preset: Sekai64FramePreset, options?: Sekai64FrameOptions): void
+  clearFrame(): void
   focusAt(target: ViewerVec3, distance?: number): void
   focusHeight(ratio: number, distance?: number): void
   focusUp(step?: number): void
@@ -246,6 +254,7 @@ export interface AnyoAvatarViewerHandle {
   zoomOut(): void
   rotateLeft(): void
   rotateRight(): void
+  rotateBy(angleRadians: number): void
   panBy(x: number, y: number): void
   setAutoRotate(enabled: boolean): void
   setAutoRotateSpeed(speed: number): void

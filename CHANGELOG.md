@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0-alpha.5
+
+- Add declarative responsive `framing`, including `framing="portrait"` for portfolio head-and-shoulders composition without full-body `fit()`.
+- Expose Viewer `frame`, `clearFrame`, and exact-radian `rotateBy` methods through the Vue public handle.
+- Fix reactive animation selection: autoplay now targets the clips returned by the newly loaded animation instead of always replaying the first clip in the library.
+- Cache URL/source-backed animation clip IDs per active model so switching back to an already loaded motion does not import duplicate clips.
+- Apply declarative framing before emitting `model-loaded`, allowing host orientation correction to run on the final framed camera while keeping animation changes camera-neutral.
+
 ## 0.2.0-alpha.4
 
 - Add a release-package integrity check: verify that `@blcklab/anyo-avatar-vue/style.css` exists in the actual npm pack manifest, is identical to the source stylesheet, and remains marked as a bundler side effect.
