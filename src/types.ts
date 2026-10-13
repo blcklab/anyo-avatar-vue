@@ -16,6 +16,8 @@ import type {
   Sekai64FocusPreset,
   Sekai64FrameOptions,
   Sekai64FramePreset,
+  Sekai64ViewPreset,
+  Sekai64ViewOptions,
   Sekai64RecoverySnapshot,
   VrmAnimationImporterOptions,
   Sekai64AnimationImporter,
@@ -26,6 +28,7 @@ export type AnyoAvatarControlsMode = 'none' | 'minimal' | 'full'
 export type AnyoAvatarModelInput = string | ModelSource | File
 export type AnyoAvatarAnimationInput = string | AnimationSource | File
 export type AnyoAvatarFraming = Sekai64FramePreset | ({ readonly preset: Sekai64FramePreset } & Sekai64FrameOptions)
+export type AnyoAvatarView = Sekai64ViewPreset | ({ readonly preset: Sekai64ViewPreset } & Sekai64ViewOptions)
 
 export type AnyoSceneModelInput = string | { readonly url: string; readonly format: 'glb' | 'gltf' } | File
 export type AnyoSceneLoadMode = 'animated' | 'static'
@@ -165,6 +168,8 @@ export interface AnyoAvatarViewerProps extends AnyoAvatarVueDefaults {
   readonly fade?: number
   /** Responsive semantic camera framing. String shorthand defaults to responsive framing in Vue. */
   readonly framing?: AnyoAvatarFraming | null
+  /** Version-aware absolute camera view. `front` follows VRM 0.x Z- and VRM 1.0 Z+. */
+  readonly view?: AnyoAvatarView | null
   /** Change this value to force a runtime rebuild when custom creation-time objects such as importers change. */
   readonly runtimeKey?: string | number
   readonly aspectRatio?: string | number
@@ -255,6 +260,9 @@ export interface AnyoAvatarViewerHandle {
   rotateLeft(): void
   rotateRight(): void
   rotateBy(angleRadians: number): void
+  setAzimuth(angleRadians: number): void
+  setElevation(angleRadians: number): void
+  setView(preset: Sekai64ViewPreset, options?: Sekai64ViewOptions): void
   panBy(x: number, y: number): void
   setAutoRotate(enabled: boolean): void
   setAutoRotateSpeed(speed: number): void

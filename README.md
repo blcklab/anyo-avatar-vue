@@ -2,7 +2,7 @@
 
 Vue 3 plugin and dynamic avatar component for `@blcklab/anyo-avatar-viewer`, including portfolio/viewer/studio presets, full viewer controls, manual file loading, JSON scene props, per-prop animation, and high-end glTF loading options.
 
-> `0.2.0-alpha.5` is a proposed prerelease. Published prereleases use the `next` npm dist-tag.
+> `0.2.0-alpha.6` is a proposed prerelease. Published prereleases use the `next` npm dist-tag.
 
 ## Installation
 
@@ -34,7 +34,7 @@ import '@blcklab/anyo-avatar-vue/style.css'
 
 The package build copies `src/style.css` to `dist/style.css`; the CSS is preserved by the package `sideEffects` contract. Run `npm run check` before publishing: it verifies that the CSS, JavaScript entry point, and declarations are **actually included** in the npm pack manifest. The check deliberately uses `npm pack --ignore-scripts --dry-run`, so an omitted build artifact cannot be silently restored by `prepack`.
 
-`0.2.0-alpha.5` is a candidate until validated with genuine Vue and published after its Avatar 0.2.2 and Avatar Viewer alpha.11 prerequisites. Do not use the `next` dist-tag as evidence that these candidate versions are already available.
+`0.2.0-alpha.6` is a candidate until validated with genuine Vue and published after its Avatar 0.2.2 and Avatar Viewer alpha.12 prerequisites. Do not use the `next` dist-tag as evidence that these candidate versions are already available.
 
 ## Portfolio
 
@@ -150,3 +150,22 @@ Use `controls="none"`, scoped slots, or the component template ref when your app
 ## License
 
 MIT
+
+
+### Responsive portrait with a semantic front view
+
+`framing` controls composition while `view` controls the absolute orbit direction. The `front` view is VRM-version aware: VRM 0.x uses Z- forward and VRM 1.0 uses Z+ forward.
+
+```vue
+<AnyoAvatarViewer
+  model="/avatar.vrm"
+  animation="/pose.vrma"
+  framing="portrait"
+  view="front"
+  :vrma="{ heading: 'normalize' }"
+  transparent
+  autoplay
+/>
+```
+
+`vrma.heading = 'normalize'` removes only the animation's initial hips heading and rotates hips translation by the same constant correction, so sideways-authored motions begin facing forward without deleting later turns.

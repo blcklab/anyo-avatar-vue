@@ -10,7 +10,7 @@
   "dependencies": {
     "vue": "^3.5.0",
     "@blcklab/anyo-avatar-vue": "file:../..",
-    "@blcklab/anyo-avatar-viewer": "0.2.0-alpha.11",
+    "@blcklab/anyo-avatar-viewer": "0.2.0-alpha.12",
     "@blcklab/anyo-avatar": "0.2.2",
     "@blcklab/sekai64": "0.8.0-rc.56"
   },

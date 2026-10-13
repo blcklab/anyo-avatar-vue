@@ -22,6 +22,8 @@ import {
   type Sekai64FocusPreset,
   type Sekai64FrameOptions,
   type Sekai64FramePreset,
+  type Sekai64ViewPreset,
+  type Sekai64ViewOptions,
   type Sekai64RecoverySnapshot,
 } from '@blcklab/anyo-avatar-viewer/browser'
 import type {
@@ -345,6 +347,9 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
   function rotateLeft() { requireRuntimeSync().navigation.rotateLeft() }
   function rotateRight() { requireRuntimeSync().navigation.rotateRight() }
   function rotateBy(angleRadians: number) { requireRuntimeSync().navigation.rotateBy(angleRadians) }
+  function setAzimuth(angleRadians: number) { requireRuntimeSync().navigation.setAzimuth(angleRadians) }
+  function setElevation(angleRadians: number) { requireRuntimeSync().navigation.setElevation(angleRadians) }
+  function setView(preset: Sekai64ViewPreset, viewOptions: Sekai64ViewOptions = {}) { requireRuntimeSync().navigation.setView(preset, viewOptions) }
   function panBy(x: number, y: number) { requireRuntimeSync().navigation.panBy(x, y) }
   function setAutoRotate(enabled: boolean) { requireRuntimeSync().navigation.setAutoRotate(enabled) }
   function setAutoRotateSpeed(speed: number) { requireRuntimeSync().navigation.setAutoRotateSpeed(speed) }
@@ -443,7 +448,7 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
     playProp, pauseProp, resumeProp, stopProp, updateProp, setPropVisible, removeProp, clearProps,
     unload, play, pause, resume, togglePlayback, stop, seek, setSpeed,
     fit, resetView, focus, frame, clearFrame, focusAt, focusHeight, focusUp, focusDown,
-    zoomIn, zoomOut, rotateLeft, rotateRight, rotateBy, panBy,
+    zoomIn, zoomOut, rotateLeft, rotateRight, rotateBy, setAzimuth, setElevation, setView, panBy,
     setAutoRotate, setAutoRotateSpeed, setNavigationEnabled,
     setQuality, setEnvironment, setBackground, setExposure, setShadows,
     setExpression, clearExpression, resetExpressions, setLookAt, clearLookAt,
@@ -508,7 +513,7 @@ export function useAnyoAvatarViewer(options: UseAnyoAvatarViewerOptions) {
 function creationKey(value: AnyoAvatarResolvedOptions): string {
   const recovery = typeof value.recovery === 'object' ? `r:${value.recovery.maxAttempts ?? ''}` : String(value.recovery)
   return [value.backend, value.transparent, value.pixelRatio ?? '', value.maxPixelRatio, value.pointerPan, value.autoFit,
-    value.normalization, value.targetHeight ?? '', recovery, value.vrma.unmappedNodes ?? '', value.vrma.unsupportedFeatures ?? '', value.vrma.bakeRate ?? ''].join('|')
+    value.normalization, value.targetHeight ?? '', recovery, value.vrma.unmappedNodes ?? '', value.vrma.unsupportedFeatures ?? '', value.vrma.bakeRate ?? '', value.vrma.heading ?? ''].join('|')
 }
 
 function createPicker(accept: string, onFile: (file: File | undefined) => void | Promise<void>): HTMLInputElement {

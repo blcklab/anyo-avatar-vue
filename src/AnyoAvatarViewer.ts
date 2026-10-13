@@ -21,6 +21,8 @@ import type {
   Sekai64AvatarQuality,
   Sekai64FrameOptions,
   Sekai64FramePreset,
+  Sekai64ViewPreset,
+  Sekai64ViewOptions,
   VrmAnimationImporterOptions,
 } from '@blcklab/anyo-avatar-viewer/browser'
 import { AnyoAvatarControls } from './AnyoAvatarControls.js'
@@ -34,6 +36,7 @@ import type {
   AnyoAvatarPreset,
   AnyoAvatarVueDefaults,
   AnyoSceneConfig,
+  AnyoAvatarView,
   AnyoAvatarViewerProps,
 } from './types.js'
 import { useAnyoAvatarViewer } from './useAnyoAvatarViewer.js'
@@ -51,6 +54,7 @@ export const AnyoAvatarViewer: DefineComponent<AnyoAvatarViewerProps> = defineCo
     speed: { type: Number, default: 1 },
     fade: { type: Number, default: 0.2 },
     framing: { type: [String, Object] as PropType<AnyoAvatarFraming | null>, default: null },
+    view: { type: [String, Object] as PropType<AnyoAvatarView | null>, default: null },
     preset: { type: String as PropType<AnyoAvatarPreset>, default: undefined },
     controls: { type: String as PropType<AnyoAvatarControlsMode>, default: undefined },
     quality: { type: String as PropType<Sekai64AvatarQuality>, default: undefined },
@@ -122,7 +126,7 @@ export const AnyoAvatarViewer: DefineComponent<AnyoAvatarViewerProps> = defineCo
       onRecoveryChange: state => emit('recovery-change', state),
       onDiagnostic: message => emit('diagnostic', message),
       onError: error => emit('error', error),
-      onModelLoaded: () => { applyFramingProp(); emit('model-loaded') },
+      onModelLoaded: () => { applyFramingProp(); applyViewProp(); emit('model-loaded') },
       onAnimationLoaded: () => emit('animation-loaded'),
       onSceneChange: models => emit('scene-change', models),
       onPropLoaded: model => emit('prop-loaded', model),
@@ -158,6 +162,10 @@ export const AnyoAvatarViewer: DefineComponent<AnyoAvatarViewerProps> = defineCo
       if (controller.hasModel.value) applyFramingProp()
     }, { deep: true })
 
+    watch(() => props.view, () => {
+      if (controller.hasModel.value) applyViewProp()
+    }, { deep: true })
+
     watch(() => [controller.ready.value, props.scene] as const, async ([ready, scene]: readonly [boolean, AnyoSceneConfig | null | undefined]) => {
       if (!ready || !scene) return
       try { await controller.handle.loadScene(scene, { replace: true }) }
@@ -176,6 +184,17 @@ export const AnyoAvatarViewer: DefineComponent<AnyoAvatarViewerProps> = defineCo
       }
       const { preset, ...frameOptions } = framing
       controller.handle.frame(preset, { responsive: true, ...(frameOptions as Sekai64FrameOptions) })
+    }
+
+    function applyViewProp() {
+      const view = props.view
+      if (!view || !controller.hasModel.value) return
+      if (typeof view === 'string') {
+        controller.handle.setView(view as Sekai64ViewPreset)
+        return
+      }
+      const { preset, ...viewOptions } = view
+      controller.handle.setView(preset, viewOptions as Sekai64ViewOptions)
     }
 
     async function refreshAnimationProps() {
@@ -281,8 +300,6 @@ export const AnyoAvatarViewer: DefineComponent<AnyoAvatarViewerProps> = defineCo
 
 function animationInputKey(input: AnyoAvatarAnimationInput): string | undefined {
   if (typeof input === 'string') return `url:${input}`
-  if ('url' in input) {
-    return `source:${input.url}|${input.format}|${JSON.stringify(input.nodeMap ?? {})}`
-  }
+  if ('url' in input) return `source:${input.url}|${input.format}|${JSON.stringify(input.nodeMap ?? {})}`
   return undefined
 }

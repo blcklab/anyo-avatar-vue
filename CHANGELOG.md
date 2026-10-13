@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0-alpha.6
+
+- Added declarative `view="front" | "back" | "left" | "right"` support backed by Avatar Viewer's version-aware semantic camera views.
+- Exposed `setView()` and `setAzimuth()` on the public Vue handle.
+- Added VRMA heading policy to runtime recreation signatures.
+- Fixed `File | AnimationSource` cache-key narrowing for strict TypeScript builds.
+
+
 ## 0.2.0-alpha.5
 
 - Add declarative responsive `framing`, including `framing="portrait"` for portfolio head-and-shoulders composition without full-body `fit()`.

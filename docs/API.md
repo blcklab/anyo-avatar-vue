@@ -43,6 +43,48 @@ The string shorthand is responsive by default in Vue. For art direction:
 
 `portrait` derives a compact upper-body frame from VRM humanoid landmarks plus authored hair/model bounds, so it does not call full-body `fit()`. The exposed handle also provides `frame(preset, options)`, `clearFrame()`, and `rotateBy(angleRadians)`.
 
+### Semantic view direction
+
+Framing and view direction are separate. `framing` controls composition; `view` controls which side of the avatar faces the camera:
+
+```vue
+<AnyoAvatarViewer
+  model="/me.vrm"
+  framing="portrait"
+  view="front"
+  transparent
+/>
+```
+
+For eye-level or slightly low/high-angle portraits, pass a view object:
+
+```vue
+<AnyoAvatarViewer
+  framing="portrait"
+  :view="{ preset: 'front', elevation: -0.035 }"
+/>
+```
+
+`elevation: 0` is eye-level. Positive values place the camera above the target; negative values place it slightly below and look upward.
+
+`view="front"` is VRM-version-aware (VRM 0.x and VRM 1.0 use opposite authored forward axes). The exposed handle also provides `setView('front' | 'back' | 'left' | 'right')` and `setAzimuth(angleRadians)`. Responsive framing preserves the current orbit direction.
+
+### VRMA initial-heading normalization
+
+Some VRMA clips are authored with a non-zero hips yaw at their first frame. When the desired presentation is a front-facing portrait, opt into initial-heading normalization:
+
+```vue
+<AnyoAvatarViewer
+  model="/me.vrm"
+  animation="/pose.vrma"
+  view="front"
+  framing="portrait"
+  :vrma="{ heading: 'normalize' }"
+/>
+```
+
+`heading: 'normalize'` removes only the clip's initial hips heading as a constant correction; later turns in the motion are preserved. The default remains `heading: 'preserve'`.
+
 Changing the declarative `animation` prop does not recreate the renderer or camera. Previously loaded URL animations are reused and the newly selected clip is the autoplay target.
 
 ## Scene props
