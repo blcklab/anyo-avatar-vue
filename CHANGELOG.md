@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.0-alpha.8
+
+- Simplified installation so consumers only need `@blcklab/anyo-avatar-vue` in an existing Vue 3 app.
+- Moved `@blcklab/anyo-avatar-viewer`, `@blcklab/anyo-avatar`, and `@blcklab/sekai64` from peer dependencies to runtime dependencies.
+- Kept `vue` as the only peer dependency so the host application continues to own its Vue instance.
+- Updated package contract checks to validate dependency ownership without hardcoding a specific prerelease version.
+- Simplified the manual-loader example to consume only Vue and the local adapter package.
+
+## 0.2.0-alpha.7
+
+- Added object-form `view` configuration with optional `elevation` for eye-level and subtle low/high-angle portrait composition.
+- Exposed `setElevation(angleRadians)` through the public Vue viewer handle.
+- Updated the Avatar Viewer compatibility baseline to `0.2.0-alpha.13` for elevation-aware semantic views.
+- Kept responsive framing and semantic front/back/left/right view direction stable while adjusting camera elevation.
+
 ## 0.2.0-alpha.6
 
 - Added declarative `view="front" | "back" | "left" | "right"` support backed by Avatar Viewer's version-aware semantic camera views.

@@ -2,16 +2,15 @@
 
 Vue 3 plugin and dynamic avatar component for `@blcklab/anyo-avatar-viewer`, including portfolio/viewer/studio presets, full viewer controls, manual file loading, JSON scene props, per-prop animation, and high-end glTF loading options.
 
-> `0.2.0-alpha.6` is a proposed prerelease. Published prereleases use the `next` npm dist-tag.
+> `0.2.0-alpha.8` is the current prerelease line. Published prereleases use the `next` npm dist-tag.
 
 ## Installation
 
 ```bash
-npm install vue @blcklab/anyo-avatar-vue@next \
-  @blcklab/anyo-avatar-viewer@next \
-  @blcklab/anyo-avatar \
-  @blcklab/sekai64@next
+npm install @blcklab/anyo-avatar-vue@next
 ```
+
+`vue` remains a peer dependency owned by the host application. The Vue adapter installs its compatible BLCK LAB runtime stack (`@blcklab/anyo-avatar-viewer`, `@blcklab/anyo-avatar`, and `@blcklab/sekai64`) automatically.
 
 ```ts
 import { createApp } from 'vue'
@@ -34,7 +33,7 @@ import '@blcklab/anyo-avatar-vue/style.css'
 
 The package build copies `src/style.css` to `dist/style.css`; the CSS is preserved by the package `sideEffects` contract. Run `npm run check` before publishing: it verifies that the CSS, JavaScript entry point, and declarations are **actually included** in the npm pack manifest. The check deliberately uses `npm pack --ignore-scripts --dry-run`, so an omitted build artifact cannot be silently restored by `prepack`.
 
-`0.2.0-alpha.6` is a candidate until validated with genuine Vue and published after its Avatar 0.2.2 and Avatar Viewer alpha.12 prerequisites. Do not use the `next` dist-tag as evidence that these candidate versions are already available.
+Run `npm run check` before publishing a prerelease. The package contract verifies the Vue peer, bundled BLCK LAB runtime dependencies, generated exports, and packed npm contents.
 
 ## Portfolio
 

@@ -3,10 +3,12 @@ import assert from 'node:assert/strict'
 
 const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
 assert.equal(pkg.name, '@blcklab/anyo-avatar-vue')
-assert.equal(pkg.version, '0.2.0-alpha.7')
-assert.equal(pkg.peerDependencies['@blcklab/anyo-avatar-viewer'], '^0.2.0-alpha.13')
-assert.equal(pkg.peerDependencies['@blcklab/anyo-avatar'], '^0.2.0')
-assert.equal(pkg.peerDependencies['@blcklab/sekai64'], '>=0.8.0-0 <0.9.0')
+assert.match(pkg.version, /^0\.2\.0-alpha\.\d+$/)
+assert.deepEqual(Object.keys(pkg.peerDependencies ?? {}).sort(), ['vue'])
+assert.equal(pkg.peerDependencies.vue, '^3.5.0')
+assert.equal(pkg.dependencies['@blcklab/anyo-avatar-viewer'], '0.2.0-alpha.13')
+assert.equal(pkg.dependencies['@blcklab/anyo-avatar'], '0.2.2')
+assert.equal(pkg.dependencies['@blcklab/sekai64'], '0.8.0-rc.56')
 assert.equal(pkg.exports['./style.css'], './dist/style.css')
 assert.ok(pkg.scripts.check.includes('verify-package.mjs'))
 
